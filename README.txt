@@ -28,10 +28,11 @@ Capabilities:
 -auto peak analyser: Position, Area, FWHM, etc.
 -auto peak-data plotter
 -autocomplete format on graphs
+-web interface
 ------------------------------------------------------------------
 
 contact info:
 
 telegram --- @LeonhardEu
-gmail --- abitunchained@gmail.com
+gmail --- abitunchained@gmail.com (currently unavailable)
 discord --- iamunchained
