@@ -1,0 +1,1 @@
+from Logging.Logging import debug, info, warn, error, critical
