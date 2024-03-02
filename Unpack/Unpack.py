@@ -56,6 +56,27 @@ class package():
         info("[Unpacking] --> Package was fully unpacked")
         return True
 
+    def files_check(self):
+        first_values = [next(iter(diction.keys())) for diction in self.unpacked_files]
+        delta_values = [list(diction)[1] - list(diction)[0] for diction in self.unpacked_files]
+        len_values = [len(diction) for diction in self.unpacked_files]
+
+        if len(set(first_values)) != 1:
+            warn('[Unpacking] --> first values of input files are different')
+            return False
+
+        if len(set(delta_values)) != 1:
+            warn('[Unpacking] --> delta value of input files are different')
+            return False
+
+        if len(set(len_values)) != 1:
+            warn('[Unpacking] --> length of input files are different')
+            return False
+
+        debug('[Unpacking] --> All files have same first values, delta value, length')
+        return True
+
+
 if __name__ == '__main__':
     a = package()
     print(a.file_names)

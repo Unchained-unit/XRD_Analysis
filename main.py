@@ -6,6 +6,6 @@ if __name__ == '__main__':
     pack.to_much()
     pack.sort_by()
     pack.unpack()
-    print(pack.unpacked_files[0])
+    pack.files_check()
 
 
