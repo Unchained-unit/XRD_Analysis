@@ -5,17 +5,30 @@ from scipy.optimize import curve_fit
 from Logging.Logging import debug, info, warn, error, critical
 from Unpack.Unpack import package
 
-class Tpeak():
+'''EN
+In that module 3 classes
+XRD_pack - represents all data in 1 place, that will be used in inserting data in origin
+XRD_patter - the class representing single graph with all it peaks
+TPeak - lowest structure almost a dataclass, used to fit 1 peak
 
+So XRD_pack is operating with large amounts of XRD_pattern samples and
+XRD_pattern is operating with large amounts of TPeak samples
+'''
+class Tpeak():
     def __init__(self, peak_index, x_values, y_values, name):
         self.name = name
         self.pos = x_values[peak_index]
+        #Peak fitted with values of x and y in radius 20 from peak point founded
+        #It can be variable values 20 is just my guess
         self.x_list = [x_values[x] for x in range(peak_index-20, peak_index+21)]
         self.y_list = [y_values[x] for x in range(peak_index-20, peak_index+21)]
         debug(f'[XRD] --> x_values for peak at {x_values[peak_index]} - {self.x_list}')
         debug(f'[XRD] --> y_values for peak at {x_values[peak_index]} - {self.y_list}')
 
     def lorentzian(self, x, A, x0, gamma):
+        #Pseudo-Voight is not used in case that all my tries with it
+        #end up fititin very-badly with significantly larger error
+        #U can try rewrite it for Pseudo-Voight
         return A / (1 + ((x - x0) / gamma) ** 2)
 
     def fit_lorentzian(self):
@@ -55,39 +68,46 @@ class XRD_pattern():
             self.x_values.append(keys)
             self.y_values.append(values)
         debug(f'[XRD] --> x and y values are formed for {self.name}')
-        #print(self.x_values)
-
+        #DISPERTION and AVG is needed to evaluate threshold to separate peaks
         self.AVERAGE = sum(self.y_values)/len(self.y_values)
         self.DISPERSION = sum([(y - self.AVERAGE)**2 for y in self.y_values])/len(self.y_values)
-        debug('[XRD] --> basics are found')
+
+        debug(f'[XRD] --> Dispersion {self.DISPERSION} are found')
 
     def find_peaks_with_wavelet(self, widths=np.arange(1, 50)):
-        # Преобразуем списки в массивы NumPy
+        #I think this is one of the hardest parts, i found wavelet to be
+        #the best for XRD, maybe there is smth better
+
         x = np.array(self.x_values)
         y = np.array(self.y_values)
 
+        KOEFFICIENT = 0.5
+        #This is arguable koefficient i think in web interface it will
+        #be variable but here 0.5 is working great
 
-        threshold = self.AVERAGE + 0.5*np.sqrt(self.DISPERSION)
-        # print('threshold is set', threshold)
+        threshold = self.AVERAGE + KOEFFICIENT*np.sqrt(self.DISPERSION)
 
-        # Ищем пики с использованием вейвлет-преобразования
+        #Just find peaks with scipy lib
         peaks = find_peaks_cwt(y, widths)
 
-        # Отфильтруем пики по порогу
+        #Filtering with threshold
         peaks = [peak for peak in peaks if y[peak] > threshold]
 
         self.Peaks_index, self.Peaks = peaks, y[peaks]
         debug(f'[XRD] --> peaks of {self.name} were found {self.Peaks}')
 
     def peaks(self, peaks_list):
+        #Init Tpeak classes
         for peak in peaks_list:
             self.pattern_peaks.append(Tpeak(peak, self.x_values, self.y_values, self.name))
+        #Fitting every peak
         for peak in self.pattern_peaks:
             peak.fit_lorentzian()
 
 class XRD_pack():
 
     def __init__(self, xrds, names):
+        #Names are usefull to debug and also will be injected in origin column names
         self.names = names
         self.xrds_pack = [XRD_pattern(xrd, name) for xrd, name in zip(xrds, names)]
 
@@ -95,17 +115,21 @@ class XRD_pack():
 
 
     def cross_peak(self):
+        #Finding peaks
         for xrd in self.xrds_pack:
             xrd.find_peaks_with_wavelet()
 
+        #This is also quite problematic feature it is obvious that even if u
+        #put nearly same graph founed peaks will be different
+        #so my solution just to take the biggest array and find that peaks in every graph
         peaks_index = [x.Peaks_index for x in self.xrds_pack]
         self.max_peak_index = (sorted(peaks_index, key = lambda x: len(x)))[-1]
         info(f'[XRD] --> {self.max_peak_index} peaks is going to be examined')
 
     def find_params(self):
+        #Initializating finding params
         for xrd in self.xrds_pack:
             xrd.peaks(self.max_peak_index)
-
 
     def imprint(self):
         for xrd in self.xrds_pack:
