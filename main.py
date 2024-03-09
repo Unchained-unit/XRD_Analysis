@@ -9,4 +9,7 @@ if __name__ == '__main__':
     pack.unpack()
     pack.files_check()
 
-    a = XRD_pack(pack.unpacked_files)
+    a = XRD_pack(pack.unpacked_files, names=pack.s_file_names)
+    a.cross_peak()
+    a.find_params()
+    #a.imprint()
