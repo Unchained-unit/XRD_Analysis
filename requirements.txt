@@ -1,0 +1,4 @@
+numpy==1.26.4
+OriginExt==1.2.2
+originpro==1.1.10
+scipy==1.12.0

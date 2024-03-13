@@ -1,8 +1,9 @@
+from Lib_config import install_reader
 from Unpack import package
 from XRD.XRD import XRD_pack
 from Origin import origin_session
 
-if __name__ == '__main__':
+if __name__ != '__main__':
     pack = package()
     pack.to_much()
     pack.sort_by()
@@ -12,4 +13,7 @@ if __name__ == '__main__':
     a = XRD_pack(pack.unpacked_files, names=pack.s_file_names)
     a.cross_peak()
     a.find_params()
-    #a.imprint()
+
+if __name__ == '__main__':
+    install_reader()
+    #b = origin_session()

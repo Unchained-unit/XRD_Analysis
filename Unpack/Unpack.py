@@ -8,7 +8,7 @@ class package():
 
         # Фильтруем список, оставляя только файлы, исключая 'README.txt' и 'main.py'
         file_names = [entry for entry in all_entries if
-                      os.path.isfile(entry) and entry not in ['README.txt', 'main.py', 'py_log.log']]
+                      os.path.isfile(entry) and entry not in ['README.txt', 'main.py', 'py_log.log', 'requirements.txt']]
 
         # Возвращаем массив названий файлов
         self.file_names = file_names

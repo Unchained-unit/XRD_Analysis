@@ -5,7 +5,12 @@ class origin_session():
     def __init__(self):
         try:
             import originpro as op
-            debug('it is')
+            debug('[ORIGIN] --> originpro is installed')
+            if op.oext:
+                op.set_show(True)
+            wks_original = op.new_sheet(type='w', lname='XRD_orig')
         except:
-            pass
+            error('[ORIGIN] --> originpro is NOT installed')
+
+
 
