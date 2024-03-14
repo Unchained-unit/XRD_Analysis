@@ -61,7 +61,7 @@ class XRD_pattern():
         self.y_values = []
         self.name = name
 
-        self.pattern_peaks = []
+        self.pattern_peaks = dict()
 
         for keys, values in xrd_dict.items():
 
@@ -94,15 +94,25 @@ class XRD_pattern():
         peaks = [peak for peak in peaks if y[peak] > threshold]
 
         self.Peaks_index, self.Peaks = peaks, y[peaks]
-        debug(f'[XRD] --> peaks of {self.name} were found {self.Peaks}')
+        debug(f'[XRD] --> peaks of {self.name} were found {self.Peaks_index}')
 
     def peaks(self, peaks_list):
         #Init Tpeak classes
         for peak in peaks_list:
-            self.pattern_peaks.append(Tpeak(peak, self.x_values, self.y_values, self.name))
+            self.pattern_peaks[f'{peak}'] = (Tpeak(peak, self.x_values, self.y_values, self.name))
         #Fitting every peak
-        for peak in self.pattern_peaks:
-            peak.fit_lorentzian()
+        for keys, values in self.pattern_peaks.items():
+            values.fit_lorentzian()
+
+    def norm_on_peak(self):
+        self.norm_xrds = dict()
+        for keys, values in self.pattern_peaks.items():
+            try:
+                self.norm_xrds[f'{keys}'] = [y/values.params[0] for y in self.y_values]
+                debug(f'[XRD] --> {self.name} is normalized on peak at {keys}')
+            except ZeroDivisionError:
+                info(f'{self.name} is NOT normalized on peak at {keys}, peak is not identified')
+
 
 class XRD_pack():
 
@@ -131,10 +141,22 @@ class XRD_pack():
         for xrd in self.xrds_pack:
             xrd.peaks(self.max_peak_index)
 
+    def norm_all_curves(self):
+        for xrd in self.xrds_pack:
+            xrd.norm_on_peak()
+
+
     def imprint(self):
         for xrd in self.xrds_pack:
             print(xrd.Peaks_index)
             print(xrd.Peaks)
+
+
+def xrd_main_func(files, names):
+    xrd_session = XRD_pack(files, names)
+    xrd_session.cross_peak()
+    xrd_session.find_params()
+    xrd_session.norm_all_curves()
 
 
 if __name__ == '__main__':

@@ -8,7 +8,8 @@ class package():
 
         # Фильтруем список, оставляя только файлы, исключая 'README.txt' и 'main.py'
         file_names = [entry for entry in all_entries if
-                      os.path.isfile(entry) and entry not in ['README.txt', 'main.py', 'py_log.log', 'requirements.txt']]
+                      os.path.isfile(entry) and entry not in ['README.txt', 'main.py',
+                                                              'py_log.log', 'requirements.txt']]
 
         # Возвращаем массив названий файлов
         self.file_names = file_names
@@ -75,6 +76,14 @@ class package():
 
         debug('[Unpacking] --> All files have same first values, delta value, length')
         return True
+
+def unpack_main_func():
+    pack = package()
+    pack.to_much()
+    pack.sort_by()
+    pack.unpack()
+    pack.files_check()
+    return pack
 
 
 if __name__ == '__main__':

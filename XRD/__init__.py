@@ -1,0 +1,1 @@
+from XRD.XRD import xrd_main_func
