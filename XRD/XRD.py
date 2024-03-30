@@ -72,7 +72,7 @@ class XRD_pattern():
         self.AVERAGE = sum(self.y_values)/len(self.y_values)
         self.DISPERSION = sum([(y - self.AVERAGE)**2 for y in self.y_values])/len(self.y_values)
 
-        debug(f'[XRD] --> Dispersion {self.DISPERSION} are found')
+        debug(f'[XRD] --> Dispersion {self.DISPERSION} was found')
 
     def find_peaks_with_wavelet(self, widths=np.arange(1, 50)):
         #I think this is one of the hardest parts, i found wavelet to be
@@ -109,9 +109,9 @@ class XRD_pattern():
         for keys, values in self.pattern_peaks.items():
             try:
                 self.norm_xrds[f'{keys}'] = [y/values.params[0] for y in self.y_values]
-                debug(f'[XRD] --> {self.name} is normalized on peak at {keys}')
+                debug(f'[XRD] --> {self.name} is normalized on peak at {self.x_values[int(keys)]}')
             except ZeroDivisionError:
-                info(f'{self.name} is NOT normalized on peak at {keys}, peak is not identified')
+                info(f'{self.name} is NOT normalized on peak at {self.x_values[int(keys)]}, peak is not identified')
 
 
 class XRD_pack():
@@ -157,6 +157,7 @@ def xrd_main_func(files, names):
     xrd_session.cross_peak()
     xrd_session.find_params()
     xrd_session.norm_all_curves()
+    return xrd_session
 
 
 if __name__ == '__main__':

@@ -11,9 +11,11 @@ class worksheet():
         self.wks.from_list(col=col, data=data, lname=name, axis=axis)
 
 
+
 class graph():
 
-    pass
+    def __init__(self):
+        pass
 
 class origin_session():
 
@@ -39,13 +41,24 @@ class origin_session():
         except Exception as e:
             error(f"Произошла ошибка при проверке версии Origin: {e}")
 
-    def __init__(self):
+    def __init__(self, xrd_session):
         self.check_origin_version()
-
+        self.graphs = {}
+        self.worksheets = {}
+        self.xrds_pack = xrd_session.xrds_pack
         pass
-        # wks_original = op.new_sheet(type='w', lname='XRD_orig')
-        # wks_peak_normalize = op.new_sheet(type='w', lname='XRD_orig')
-        # wks_normalize_FTO = op.new_sheet(type='w', lname='XRD_orig')
+
+    def create_ws(self, name):
+        self.worksheets[name] = worksheet(name)
+
+    def init_worksheets(self):
+        for keys, values in self.xrds_pack[0].pattern_peaks.items():
+            self.create_ws(f'norm on {self.xrds_pack[0].x_values[int(keys)]}')
+
+    def xrd_insertion(self, name):
+        self.worksheets[name].insert_data(0, self.xrds_pack[0].x_values, '2Thetta', axis='X')
+        for i in range(len(self.xrds_pack)):
+            self.worksheets[name].insert_data(i+1, self.xrds_pack[i].y_values, self.xrds_pack[i].name, axis='Y')
 
 
     def show(self):
@@ -53,8 +66,19 @@ class origin_session():
             op.set_show(True)
 
 
+
+def origin_main_func(xrd_session):
+    origin_running_session = origin_session(xrd_session)
+
+    origin_running_session.create_ws('Non - Normalized')
+    origin_running_session.xrd_insertion('Non - Normalized')
+
+    origin_running_session.init_worksheets()
+
+    origin_running_session.show()
+
+
+    return origin_running_session
+
 if __name__ == '__main__':
-    a = origin_session()
-    w_k_s = worksheet(name='commited')
-    print(w_k_s.name)
-    a.show()
+    origin_main_func()
