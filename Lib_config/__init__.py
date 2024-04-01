@@ -1,1 +1,1 @@
-from Lib_config.Lib_config import install_reader
+from Lib_config.Lib_config import main_installing_func

@@ -47,10 +47,11 @@ class origin_session():
         self.graphs = {}
         self.worksheets = {}
         self.xrds_pack = xrd_session.xrds_pack
-        pass
+
 
     def create_ws(self, name):
         self.worksheets[name] = worksheet(name)
+        debug(f'worksheet {name} created')
 
     def init_worksheets(self):
         for keys, values in self.xrds_pack[0].pattern_peaks.items():
@@ -61,6 +62,8 @@ class origin_session():
         for i in range(len(self.xrds_pack)):
             self.worksheets[name].insert_data(i+1, self.xrds_pack[i].y_values, self.xrds_pack[i].name, axis='Y')
 
+        debug(f'data for {[x for x in self.xrds_pack[i].name]} inserted')
+
 
     def show(self):
         if op.oext:
@@ -69,7 +72,11 @@ class origin_session():
 
 
 def origin_main_func(xrd_session):
-    origin_running_session = origin_session(xrd_session)
+    try:
+        origin_running_session = origin_session(xrd_session)
+        info('[ORIGIN] --> Session is running successfully ')
+    except:
+        critical('[ORIGIN] --> Session can not be initialized')
 
     origin_running_session.create_ws('Non - Normalized')
     origin_running_session.xrd_insertion('Non - Normalized')

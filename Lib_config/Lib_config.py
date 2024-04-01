@@ -1,5 +1,6 @@
 import pip._internal as pip
 from Logging import debug, info, warn, error, critical
+from Logging import summary_logging
 
 
 class auto_import():
@@ -88,6 +89,11 @@ def install_reader():
     with open('requirements.txt', 'r') as file:
         libs = [column.split('=')[0] for column in file]
         installer(libs)
+
+
+def main_installing_func():
+    install_reader()
+    summary_logging(warn, error, critical, 'INSTALLING')
 
 if __name__ == '__main__':
     install_reader()
