@@ -1,4 +1,5 @@
 from Logging import debug, info, warn, error, critical
+from Logging import summary_logging
 import os
 class package():
     def __init__(self):
@@ -9,7 +10,8 @@ class package():
         # Фильтруем список, оставляя только файлы, исключая 'README.txt' и 'main.py'
         file_names = [entry for entry in all_entries if
                       os.path.isfile(entry) and entry not in ['README.txt', 'main.py',
-                                                              'py_log.log', 'requirements.txt']]
+                                                              'py_log.log', 'requirements.txt',
+                                                              'log_summary.log']]
 
         # Возвращаем массив названий файлов
         self.file_names = file_names
@@ -83,6 +85,7 @@ def unpack_main_func():
     pack.sort_by()
     pack.unpack()
     pack.files_check()
+    summary_logging(warn, error, critical, 'UNPACK')
     return pack
 
 

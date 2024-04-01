@@ -1,4 +1,5 @@
 from Logging import debug, info, warn, error, critical
+from Logging import summary_logging
 import originpro as op
 
 class worksheet():
@@ -29,17 +30,17 @@ class origin_session():
         try:
             # Получаем версию Origin
             version = float(op.lt_float('@V'))
-            debug(f"Текущая версия Origin: {version}")
+            debug(f"[Origin] -> Текущая версия Origin: {version}")
 
             # Проверяем, поддерживается ли версия
             if version < min_supported_version:
                 error(
-                    f"Предупреждение: Текущая версия Origin ({version}) ниже минимально поддерживаемой ({min_supported_version}).")
+                    f"[Origin] -> Предупреждение: Текущая версия Origin ({version}) ниже минимально поддерживаемой ({min_supported_version}).")
             else:
-                debug("Версия Origin поддерживается.")
+                debug("[Origin] -> Версия Origin поддерживается.")
 
         except Exception as e:
-            error(f"Произошла ошибка при проверке версии Origin: {e}")
+            error(f"[Origin] -> Произошла ошибка при проверке версии Origin: {e}")
 
     def __init__(self, xrd_session):
         self.check_origin_version()
@@ -77,7 +78,7 @@ def origin_main_func(xrd_session):
 
     origin_running_session.show()
 
-
+    summary_logging(warn, error, critical, 'ORIGIN')
     return origin_running_session
 
 if __name__ == '__main__':

@@ -2,7 +2,8 @@ import numpy as np
 from scipy.signal import find_peaks_cwt
 from scipy.optimize import curve_fit
 
-from Logging.Logging import debug, info, warn, error, critical
+from Logging import debug, info, warn, error, critical
+from Logging import summary_logging
 from Unpack.Unpack import package
 
 '''EN
@@ -157,6 +158,7 @@ def xrd_main_func(files, names):
     xrd_session.cross_peak()
     xrd_session.find_params()
     xrd_session.norm_all_curves()
+    summary_logging(warn, error, critical, 'XRD')
     return xrd_session
 
 
