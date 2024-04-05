@@ -17,13 +17,14 @@ from X-Ray Diffraction analysis, using python3 with origin
 Requirements:
 
 -OriginPro installed 2021 year or higher
+-Excel can be used as data storage if there is troubles with origin
 -Python packages that are shown in "requirements.txt"
 -Python 3.9 or higher
 ------------------------------------------------------------------
 
 Capabilities:
 
--plot any amount of graphs on 1 graph
+-plot any amount of graphs at single graph space
 -auto normalization on peaks which you can choose
 -auto peak analyser: Position, Area, FWHM, etc.
 -auto peak-data plotter

@@ -26,6 +26,7 @@ class Tpeak():
         debug(f'[XRD] --> x_values for peak at {x_values[peak_index]} - {self.x_list}')
         debug(f'[XRD] --> y_values for peak at {x_values[peak_index]} - {self.y_list}')
 
+
     def lorentzian(self, x, A, x0, gamma):
         #Pseudo-Voight is not used in case that all my tries with it
         #end up fititin very-badly with significantly larger error
@@ -46,7 +47,10 @@ class Tpeak():
 
             self.params = params
             self.errors = errors
-            debug(f'[XRD] --> {self.name} peak at {self.pos} params {params} errors {errors}')
+
+            info(f'[XRD] --> first : Amplitude, second : Position, third : FWHM/2')
+            debug(f'[XRD] --> {self.name} peak at {self.pos} params {params}')
+            debug(f'[XRD] --> {self.name} peak at {self.pos} errors {errors}')
 
         except RuntimeError:
             error(f'[XRD] --> Params cannot be optimized - Zeros are returned')
@@ -68,6 +72,7 @@ class XRD_pattern():
 
             self.x_values.append(keys)
             self.y_values.append(values)
+
         debug(f'[XRD] --> x and y values are formed for {self.name}')
         #DISPERTION and AVG is needed to evaluate threshold to separate peaks
         self.AVERAGE = sum(self.y_values)/len(self.y_values)
@@ -101,6 +106,7 @@ class XRD_pattern():
         #Init Tpeak classes
         for peak in peaks_list:
             self.pattern_peaks[f'{peak}'] = (Tpeak(peak, self.x_values, self.y_values, self.name))
+            debug(f'[XRD] --> TPeak is initialized for {self.name[:8]} angle {self.x_values[int(peak)]}')
         #Fitting every peak
         for keys, values in self.pattern_peaks.items():
             values.fit_lorentzian()
@@ -109,24 +115,28 @@ class XRD_pattern():
         self.norm_xrds = dict()
         for keys, values in self.pattern_peaks.items():
             try:
-                self.norm_xrds[f'{keys}'] = [y/values.params[0] for y in self.y_values]
+                self.norm_xrds[f'{self.x_values[int(keys)]}'] = {x : y/values.params[0] for x, y in zip(self.y_values, self.x_values)}
                 debug(f'[XRD] --> {self.name} is normalized on peak at {self.x_values[int(keys)]}')
             except ZeroDivisionError:
-                info(f'{self.name} is NOT normalized on peak at {self.x_values[int(keys)]}, peak is not identified')
-
+                warn(f'{self.name} is NOT normalized on peak at {self.x_values[int(keys)]}, peak is not identified')
+        return self.norm_xrds
 
 class XRD_pack():
 
     def __init__(self, xrds, names):
         #Names are usefull to debug and also will be injected in origin column names
         self.names = names
-        self.xrds_pack = [XRD_pattern(xrd, name) for xrd, name in zip(xrds, names)]
+        try:
+            self.xrds_pack = [XRD_pattern(xrd, name) for xrd, name in zip(xrds, names)]
 
-        info(f'[XRD] --> XRD_pack is formed from {names}')
+            info(f'[XRD] --> XRD_pack is formed from {names}')
+        except:
+            critical(f'[XRD] --> XRD_pack can not be formed')
 
 
     def cross_peak(self):
         #Finding peaks
+
         for xrd in self.xrds_pack:
             xrd.find_peaks_with_wavelet()
 
@@ -142,9 +152,35 @@ class XRD_pack():
         for xrd in self.xrds_pack:
             xrd.peaks(self.max_peak_index)
 
+    def forming_norm_structure(self, arrays, Names, Degrees):
+        try:
+            stage1 = [{names: XRD_pattern(dicts[keys], f'{names[:8]}_normed_on_{keys}') for dicts, names in zip(arrays, Names)} for keys in Degrees]
+            debug(f'[XRD] --> forming norm curves structure 50%')
+            stage2 = {degree: value for degree, value in zip(Degrees, stage1)}
+            debug(f'[XRD] --> forming norm curves structure 100%')
+
+            return stage2
+        except AttributeError:
+            error(f'[XRD] --> Attribute error with forming normed structure')
+
+            return False
+
+
+
     def norm_all_curves(self):
-        for xrd in self.xrds_pack:
-            xrd.norm_on_peak()
+
+        self.norm_info_not_sorted = [xrd.norm_on_peak() for xrd in self.xrds_pack]
+
+        self.peaks_2th = [keys for keys, values in self.norm_info_not_sorted[0].items()]
+        debug(f'[XRD] --> data is sorting by norm on {self.peaks_2th}')
+        # print(self.peaks_2th)
+        self.all_norm_curves = self.forming_norm_structure(self.norm_info_not_sorted,
+                                                           self.names, self.peaks_2th)
+        info(f'[XRD] --> norm structure is formed')
+        debug('[XRD] --> structure is {angle : {name : XRD_pattern}}')
+
+
+
 
 
     def imprint(self):

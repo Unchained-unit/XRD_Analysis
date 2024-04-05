@@ -57,12 +57,15 @@ class origin_session():
         for keys, values in self.xrds_pack[0].pattern_peaks.items():
             self.create_ws(f'norm on {self.xrds_pack[0].x_values[int(keys)]}')
 
+        for xrd in self.xrds_pack:
+            pass
+
     def xrd_insertion(self, name):
         self.worksheets[name].insert_data(0, self.xrds_pack[0].x_values, '2Thetta', axis='X')
         for i in range(len(self.xrds_pack)):
             self.worksheets[name].insert_data(i+1, self.xrds_pack[i].y_values, self.xrds_pack[i].name, axis='Y')
 
-        debug(f'data for {[x for x in self.xrds_pack[i].name]} inserted')
+            debug(f'data for {[x for x in self.xrds_pack[i].name]} inserted')
 
 
     def show(self):

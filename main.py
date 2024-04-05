@@ -9,13 +9,10 @@ def main():
     main_installing_func()
     pack = unpack_main_func()
     xrd_session = xrd_main_func(pack.unpacked_files, names=pack.s_file_names)
-    origin_main_func(xrd_session)
+    #origin_main_func(xrd_session)
 
 
 
 if __name__ == '__main__':
     main()
 
-
-if __name__ != '__main__':
-    install_reader()
