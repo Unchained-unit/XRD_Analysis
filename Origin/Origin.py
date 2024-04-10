@@ -1,6 +1,11 @@
+from pathlib import Path
+import os
+
 from Logging import debug, info, warn, error, critical
 from Logging import summary_logging
+
 import originpro as op
+
 
 class worksheet():
 
@@ -11,11 +16,12 @@ class worksheet():
     def insert_data(self, col, data, name, axis):
         self.wks.from_list(col=col, data=data, lname=name, axis=axis)
 
-
-
 class graph():
 
-    def __init__(self):
+    def __init__(self, name):
+        self.name = name
+
+    def xrd_pattern_graph(self):
         pass
 
 class origin_session():
@@ -44,28 +50,34 @@ class origin_session():
 
     def __init__(self, xrd_session):
         self.check_origin_version()
+
         self.graphs = {}
+        self.TEMPLATES_PATH = {f'{temp}': (f'{Path(__file__).parents[1]}/Templates/{temp}') for temp in
+                               os.listdir(f'{Path(__file__).parents[1]}/Templates')}
         self.worksheets = {}
         self.xrds_pack = xrd_session.xrds_pack
+        self.normed_curves = xrd_session.all_norm_curves
 
 
     def create_ws(self, name):
         self.worksheets[name] = worksheet(name)
-        debug(f'worksheet {name} created')
+        debug(f'[ORIGIN] --> worksheet {name} created')
 
     def init_worksheets(self):
-        for keys, values in self.xrds_pack[0].pattern_peaks.items():
-            self.create_ws(f'norm on {self.xrds_pack[0].x_values[int(keys)]}')
+        for angles, values in self.normed_curves.items():
+            self.create_ws(f'norm on {angles}')
+            self.worksheets[f'norm on {angles}'].insert_data(0, self.xrds_pack[0].x_values, '2Thetta', axis='X')
+            for i, name, xrd_pattern in zip(range(len(values)), values.keys(), values.values()):
+                self.worksheets[f'norm on {angles}'].insert_data(i+1, xrd_pattern.y_values, name, axis='Y')
+                debug(f'[ORIGIN] --> {len(xrd_pattern.y_values), xrd_pattern.y_values}')
 
-        for xrd in self.xrds_pack:
-            pass
 
     def xrd_insertion(self, name):
         self.worksheets[name].insert_data(0, self.xrds_pack[0].x_values, '2Thetta', axis='X')
         for i in range(len(self.xrds_pack)):
             self.worksheets[name].insert_data(i+1, self.xrds_pack[i].y_values, self.xrds_pack[i].name, axis='Y')
 
-            debug(f'data for {[x for x in self.xrds_pack[i].name]} inserted')
+            debug(f'[ORIGIN] --> data for {self.xrds_pack[i].name} inserted')
 
 
     def show(self):
@@ -74,7 +86,7 @@ class origin_session():
 
 
 
-def origin_main_func(xrd_session):
+def origin_func(xrd_session):
     try:
         origin_running_session = origin_session(xrd_session)
         info('[ORIGIN] --> Session is running successfully ')
@@ -83,13 +95,22 @@ def origin_main_func(xrd_session):
 
     origin_running_session.create_ws('Non - Normalized')
     origin_running_session.xrd_insertion('Non - Normalized')
-
     origin_running_session.init_worksheets()
 
     origin_running_session.show()
 
-    summary_logging(warn, error, critical, 'ORIGIN')
     return origin_running_session
+
+def origin_main_func(xrd_session):
+    try:
+        ORS = origin_func(xrd_session)
+        debug(f'[ORIGIN] --> Origin is working properly')
+        return ORS
+    except:
+        critical(f'[ORIGIN] --> Origin module stopped working')
+        return False
+    finally:
+        summary_logging(warn, error, critical, 'ORIGIN')
 
 if __name__ == '__main__':
     origin_main_func()

@@ -52,6 +52,9 @@ class Tpeak():
             debug(f'[XRD] --> {self.name} peak at {self.pos} params {params}')
             debug(f'[XRD] --> {self.name} peak at {self.pos} errors {errors}')
 
+            self.Area = params[0]*params[2]*(np.arctan((self.x_list[-1] - self.params[1])/params[2]) - np.arctan((self.x_list[0] - self.params[1])/params[2]))
+            debug(f'[XRD] --> {self.Area} Area for peak at {self.pos} name {self.name}')
+
         except RuntimeError:
             error(f'[XRD] --> Params cannot be optimized - Zeros are returned')
             self.params = [0,0,0]
@@ -115,7 +118,7 @@ class XRD_pattern():
         self.norm_xrds = dict()
         for keys, values in self.pattern_peaks.items():
             try:
-                self.norm_xrds[f'{self.x_values[int(keys)]}'] = {x : y/values.params[0] for x, y in zip(self.y_values, self.x_values)}
+                self.norm_xrds[f'{self.x_values[int(keys)]}'] = {x : y/values.params[0] for x, y in zip(self.x_values, self.y_values)}
                 debug(f'[XRD] --> {self.name} is normalized on peak at {self.x_values[int(keys)]}')
             except ZeroDivisionError:
                 warn(f'{self.name} is NOT normalized on peak at {self.x_values[int(keys)]}, peak is not identified')
@@ -190,12 +193,17 @@ class XRD_pack():
 
 
 def xrd_main_func(files, names):
-    xrd_session = XRD_pack(files, names)
-    xrd_session.cross_peak()
-    xrd_session.find_params()
-    xrd_session.norm_all_curves()
-    summary_logging(warn, error, critical, 'XRD')
-    return xrd_session
+    try:
+        xrd_session = XRD_pack(files, names)
+        xrd_session.cross_peak()
+        xrd_session.find_params()
+        xrd_session.norm_all_curves()
+        return xrd_session
+    except:
+        critical(f'[XRD] --> XRD module is not working properly')
+    finally:
+        summary_logging(warn, error, critical, 'XRD')
+
 
 
 if __name__ == '__main__':

@@ -92,8 +92,12 @@ def install_reader():
 
 
 def main_installing_func():
-    install_reader()
-    summary_logging(warn, error, critical, 'INSTALLING')
+    try:
+        install_reader()
+    except:
+        critical(f'[INSTALLING] --> Some modules cannot not be found or installed')
+    finally:
+        summary_logging(warn, error, critical, 'INSTALLING')
 
 if __name__ == '__main__':
     install_reader()
