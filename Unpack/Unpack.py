@@ -80,13 +80,18 @@ class package():
         return True
 
 def unpack_main_func():
-    pack = package()
-    pack.to_much()
-    pack.sort_by()
-    pack.unpack()
-    pack.files_check()
-    summary_logging(warn, error, critical, 'UNPACK')
-    return pack
+    try:
+        pack = package()
+        pack.to_much()
+        pack.sort_by()
+        pack.unpack()
+        pack.files_check()
+        return pack
+    except:
+        critical('[UNPACK] --> Package cannot be unpacked')
+    finally:
+        summary_logging(warn, error, critical, 'UNPACK')
+
 
 
 if __name__ == '__main__':
